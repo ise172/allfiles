@@ -70,7 +70,12 @@ class Animation():
     
     def display_truck_locations(self,trucks):
         for i in trucks:
-            pygame.draw.circle(self.screen, (0,200,0),i.location,5)
+            coordinates = i.graph.get_coordinates(i.location[1][0])
+            step = float(i.location[1][2])/float(i.location[1][3])
+            x = coordinates[0] + step*i.delta[0]
+            y = coordinates[1] + step*i.delta[1]
+            location = (int(x),int(y))
+            pygame.draw.circle(self.screen, (0,200,0),location,5)
         
         
             

@@ -4,7 +4,6 @@ Created on Mar 23, 2020
 @author: Pierre
 '''
 import numpy as np
-from openpyxl.descriptors.excel import Coordinate
 
 class Graph:
 
@@ -20,21 +19,21 @@ class Graph:
     
     def add_edge(self,u,v,c): #this will add edge (u,v) with cost "c" to the graph
         if u not in self.neighbors:
-          self.neighbors[u]=[]
+            self.neighbors[u]=[]
         if v not in self.neighbors:
-          self.neighbors[v]=[]
+            self.neighbors[v]=[]
         if u > v:
-          u, v = v, u
+            u, v = v, u
         if (u,v) not in self.cost:
-          self.neighbors[u].append(v)
-          self.neighbors[v].append(u)
-          self.cost[(u,v)] = c
+            self.neighbors[u].append(v)
+            self.neighbors[v].append(u)
+            self.cost[(u,v)] = c
 
     def get_cost(self, u,v):
         if u > v:
-          u, v = v, u
+            u, v = v, u
         if (u,v) in self.cost:
-          return self.cost[(u,v)]
+            return self.cost[(u,v)]
         return None
 
     def get_coordinates(self,node):
@@ -43,6 +42,13 @@ class Graph:
                 coordinates = (int(vertex[1]*1500),int(vertex[2]*1500))
                 return coordinates
         
+    def is_vertex(self,coordinates):
+        for vertex in self.Verticies:
+            if (coordinates == (int(vertex[1]*1500),int(vertex[2]*1500))):
+                return True
+            else:
+                return False
+    
     def dijkstra(self,start_node, end_node):
         d = {}
         for v in self.neighbors:
@@ -82,28 +88,6 @@ class Graph:
             self.get_path(start_node,pre[current_node],path,pre)
     
     
-    '''  
-    def get_coordinate_path(self,path):
-        coordinate_path = []
-        i = 0
-        current_edge = 0
-        while i < len(path)-1:
-            for edge in self.Edges:
-                if (edge[0] == path[i] and edge[1] == path[i+1]) or (edge[0] == path[i+1] and edge[1] == path[i]):
-                    current_edge = edge
-            if int(current_edge[3][0][0]*1500) != Graph.get_coordinates(self, edge[0])[0]:
-                current_edge[3].reverse()
-            for j,ix in enumerate(current_edge[3]):
-                #if j > 0:
-                #    coordinate_path.pop()
-                coordinates = (int(ix[0]*1500),int(ix[1]*1500))
-                coordinate_path.append(coordinates)
-            
-            i += 1
-        return coordinate_path
-    ''' 
-        
-        
         
         
         

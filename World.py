@@ -2,9 +2,7 @@ from  Classes.AbstractWorld import AbstractWorld
 from Animation import Animation
 from Graph import Graph
 import pygame
-from astropy.units import nV
 from Classes.Trucks import Trucks
-from openpyxl.descriptors.excel import Coordinate
 pygame.font.init() 
 import random
 import numpy as np
@@ -32,14 +30,14 @@ class World(AbstractWorld):
 
 
 
-		#self.animation.initialize_animation()
-		
+		self.animation.initialize_animation()
 		
 		for t in xrange(initialTime,finalTime):
-			#self.animation.time = t
+			self.animation.time = t
 			for truck in self.trucks:
 				truck.update_truck_location()
-			#self.animation.update_animation(self.trucks)
+				print "location: ", truck.location
+			self.animation.update_animation(self.trucks)
 			
 			
 			newOrders = self.getNewOrdersForGivenTime(t)
@@ -52,15 +50,18 @@ class World(AbstractWorld):
 					
 					## GENERATE TWO RANDOM VERTICES
 					range = len(self.Verticies)
-					start_node = self.Verticies[random.randrange(range)][0]
-					end_node = self.Verticies[random.randrange(range)][0]
+					#start_node = self.Verticies[random.randrange(range)][0]
+					start_node = 122 #TEST CASE
+					end_node = 1
+					#end_node = self.Verticies[random.randrange(range)][0]
 					while end_node == start_node: #Ensures that the start and end vertices are not the same
 						end_node = self.Verticies[random.randrange(range)][0]
 					
 					## FIND THE SHORTEST PATH
 					path = self.graph.dijkstra(start_node, end_node)
 					
-					self.trucks.append(Trucks(self.graph.get_coordinates(start_node),path))
+					if len(self.trucks) == 0:
+						self.trucks.append(Trucks(path, self.graph))
 			
 	
 			for event in pygame.event.get():
