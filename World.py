@@ -51,8 +51,8 @@ class World(AbstractWorld):
 					## GENERATE TWO RANDOM VERTICES
 					range = len(self.Verticies)
 					#start_node = self.Verticies[random.randrange(range)][0]
-					start_node = 122 #TEST CASE
-					end_node = 1
+					start_node = 199 #TEST CASE
+					end_node = 35
 					#end_node = self.Verticies[random.randrange(range)][0]
 					while end_node == start_node: #Ensures that the start and end vertices are not the same
 						end_node = self.Verticies[random.randrange(range)][0]
@@ -60,7 +60,10 @@ class World(AbstractWorld):
 					## FIND THE SHORTEST PATH
 					path = self.graph.dijkstra(start_node, end_node)
 					
-					if len(self.trucks) == 0:
+					print "3: ", self.graph.get_coordinates(3)
+					print "35: ", self.graph.get_coordinates(35)
+					
+					if len(self.trucks) <= 0:
 						self.trucks.append(Trucks(path, self.graph))
 			
 	

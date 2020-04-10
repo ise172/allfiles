@@ -14,6 +14,7 @@ class Trucks:
         self.cost = 0
         self.location = (self.vertex,(0,0,0, self.cost))
         self.delta = (0,0)
+        self.edge = 0
 
         
     def update_truck_location(self):
@@ -27,6 +28,7 @@ class Trucks:
             current = self.graph.get_coordinates(self.path[0])
             destination = self.graph.get_coordinates(self.path[1])
             self.delta = (destination[0]-current[0], destination[1]-current[1])
+            self.edge = self.graph.get_edge(self.path[0],self.path[1])
         
         temp1 = self.location[1]
         temp2 = temp1[2]

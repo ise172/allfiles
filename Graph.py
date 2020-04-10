@@ -89,8 +89,15 @@ class Graph:
     
     
         
-        
-        
+    def get_edge(self, start, end):
+        for edge in self.Edges:
+            if (edge[0]==start and edge[1]==end) or (edge[0]==end and edge[1]==start): 
+                if ((int(edge[3][0][0]*1500),int(edge[3][0][1]*1500)) == self.get_coordinates(start)):
+                    return edge
+                else:
+                    edge[3].reverse()
+                    return edge
+                
         
         
         

@@ -5,6 +5,7 @@ Created on Mar 6, 2020
 '''
 
 import pygame
+import math
 
 
 class Animation():
@@ -71,13 +72,47 @@ class Animation():
     def display_truck_locations(self,trucks):
         for i in trucks:
             coordinates = i.graph.get_coordinates(i.location[1][0])
-            step = float(i.location[1][2])/float(i.location[1][3])
-            x = coordinates[0] + step*i.delta[0]
-            y = coordinates[1] + step*i.delta[1]
-            location = (int(x),int(y))
-            pygame.draw.circle(self.screen, (0,200,0),location,5)
+            if len(i.edge[3]) > 2:
+                ## For curved edge
+                length = 0
+                n = len(i.edge[3])
+                count = 0
+                while count < n-1:
+                    length = length + math.sqrt((i.edge[3][count+1][0]*1500-i.edge[3][count][0]*1500)**2 + (i.edge[3][count+1][1]*1500 - i.edge[3][count][1]*1500)**2)
+                    count = count +1
+                
+                step = float(i.location[1][2])/float(i.location[1][3])
+                move = step*length
+                count = 0
+                while count < n-1:
+                    current_segment = math.sqrt((i.edge[3][count][0]*1500-coordinates[0])**2 + (i.edge[3][count][1]*1500 - coordinates[1])**2)
+                    if move > current_segment:
+                        move = move - current_segment
+                        count = count + 1
+                        continue
+                    x2 = i.edge[3][count+1][0]*1500
+                    y2 = i.edge[3][count+1][1]*1500
+                    x1 = i.edge[3][count][0]*1500
+                    y1 = i.edge[3][count][1]*1500
+                    x1 = x1 + float(move/current_segment)*(x2-x1)
+                    y1 = y1 + float(move/current_segment)*(y2-y1)
+                    location = (int(x1),int(y1))
+                    break
+                    
+                pygame.draw.circle(self.screen, (0,200,0),location,5)
+                    
+                
+            else:
+                ### ONLY WORKS IF PATH IS STRAIGHT ###
+                #coordinates = i.graph.get_coordinates(i.location[1][0])
+                step = float(i.location[1][2])/float(i.location[1][3])
+                x = coordinates[0] + step*i.delta[0]
+                y = coordinates[1] + step*i.delta[1]
+                location = (int(x),int(y))
+                pygame.draw.circle(self.screen, (0,200,0),location,5)
         
         
+            #Add up segments to get total length
             
             
             
