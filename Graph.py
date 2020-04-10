@@ -8,14 +8,26 @@ import numpy as np
 class Graph:
 
     def __init__(self, edges, verticies):
-        self.neighbors = {} # key - node, value - list of neighbours 
+        self.neighbors = {} # key - node, value - list of neighbors 
         self.cost = {}  # key - edge, value - cost
         self.Edges = edges
         self.Verticies = verticies
 
     def create_graph(self):
+        #scale it by 1500
+        i,j = 0,0
+        while i < len(self.Verticies):
+            self.Verticies[i][1] = int(self.Verticies[i][1]*1500)
+            self.Verticies[i][2] = int(self.Verticies[i][2]*1500)
+            i = i + 1
+        while j < len(self.Edges):
+            k = 0
+            while k < len(self.Edges[j][3]):
+                self.Edges[j][3][k] = (int(self.Edges[j][3][k][0]*1500), int(self.Edges[j][3][k][1]*1500))
+                k = k + 1
+            j = j + 1
         for element in self.Edges:
-            self.add_edge(element[0], element[1], element[2]) #change "1" to element[2] to get real distances/costs
+            self.add_edge(element[0], element[1], element[2])
     
     def add_edge(self,u,v,c): #this will add edge (u,v) with cost "c" to the graph
         if u not in self.neighbors:
@@ -39,12 +51,12 @@ class Graph:
     def get_coordinates(self,node):
         for vertex in self.Verticies:
             if vertex[0] == node:
-                coordinates = (int(vertex[1]*1500),int(vertex[2]*1500))
+                coordinates = (vertex[1],vertex[2])
                 return coordinates
         
     def is_vertex(self,coordinates):
         for vertex in self.Verticies:
-            if (coordinates == (int(vertex[1]*1500),int(vertex[2]*1500))):
+            if (coordinates == (vertex[1],vertex[2])):
                 return True
             else:
                 return False
@@ -74,10 +86,9 @@ class Graph:
         path = []
         path.append(end_node)
         self.get_path(start_node,end_node,path,pre)    
-        path.reverse()
-        #print "From node ", start_node, " to node ", end_node    
+        path.reverse()    
         print "PATH: ", path
-        #print "Length of path: ", d[end_node], " \n"
+        print "Length of path: ", d[end_node], " \n"
         return path
     
     def get_path(self,start_node,current_node,path,pre):
@@ -92,7 +103,7 @@ class Graph:
     def get_edge(self, start, end):
         for edge in self.Edges:
             if (edge[0]==start and edge[1]==end) or (edge[0]==end and edge[1]==start): 
-                if ((int(edge[3][0][0]*1500),int(edge[3][0][1]*1500)) == self.get_coordinates(start)):
+                if ((edge[3][0][0],edge[3][0][1]) == self.get_coordinates(start)):
                     return edge
                 else:
                     edge[3].reverse()

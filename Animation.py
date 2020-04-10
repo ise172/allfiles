@@ -9,9 +9,9 @@ import math
 
 
 class Animation():
-    def __init__(self, edges, verticies):
-        self.Edges = edges
-        self.Verticies = verticies
+    def __init__(self, graph):
+        self.Edges = graph.Edges
+        self.Verticies = graph.Verticies
         self.dimx = 1500
         self.dimy = 1050
         self.font1  = pygame.font.SysFont('Comic Sans MS', 30)
@@ -43,7 +43,7 @@ class Animation():
     
     def draw_verticies(self):
         for vertex in self.Verticies:
-            center = (int(vertex[1]*1500),int(vertex[2]*1500))
+            center = (vertex[1],vertex[2])
             pygame.draw.circle(self.screen,(0,0,200),center,12)
             #draw number of vertex
             text = self.font2.render("%d"%(vertex[0]), True, (255, 255, 255))
@@ -59,60 +59,60 @@ class Animation():
                 n = len(edge[3])
                 count = 0
                 while count < n-1:
-                    start = (int(edge[3][count][0]*1500),int(edge[3][count][1]*1500))
-                    end =  (int(edge[3][count+1][0]*1500),int(edge[3][count+1][1]*1500))
+                    start = (edge[3][count][0],edge[3][count][1])
+                    end =  (edge[3][count+1][0],edge[3][count+1][1])
                     pygame.draw.line(self.screen,(200,0,0), start, end,2)
                     count += 1
             else:
                 #straight line
-                start = (int(edge[3][0][0]*1500),int(edge[3][0][1]*1500))
-                end = (int(edge[3][1][0]*1500),int(edge[3][1][1]*1500))
+                start = (edge[3][0][0],edge[3][0][1])
+                end = (edge[3][1][0],edge[3][1][1])
                 pygame.draw.line(self.screen,(200,0,0), start, end,2)
     
     def display_truck_locations(self,trucks):
-        for i in trucks:
-            coordinates = i.graph.get_coordinates(i.location[1][0])
-            if len(i.edge[3]) > 2:
+        for truck in trucks:
+            coordinates = truck.graph.get_coordinates(truck.location[1][0])
+            step = float(truck.location[1][2])/float(truck.location[1][3])
+            if len(truck.edge[3]) > 2:
                 ## For curved edge
                 length = 0
-                n = len(i.edge[3])
+                n = len(truck.edge[3])
                 count = 0
                 while count < n-1:
-                    length = length + math.sqrt((i.edge[3][count+1][0]*1500-i.edge[3][count][0]*1500)**2 + (i.edge[3][count+1][1]*1500 - i.edge[3][count][1]*1500)**2)
+                    length = length + math.sqrt((truck.edge[3][count+1][0]-truck.edge[3][count][0])**2 + (truck.edge[3][count+1][1] - truck.edge[3][count][1])**2)
                     count = count +1
                 
-                step = float(i.location[1][2])/float(i.location[1][3])
+                
                 move = step*length
                 count = 0
                 while count < n-1:
-                    current_segment = math.sqrt((i.edge[3][count][0]*1500-coordinates[0])**2 + (i.edge[3][count][1]*1500 - coordinates[1])**2)
+                    current_segment = math.sqrt((truck.edge[3][count+1][0]-truck.edge[3][count][0])**2 + (truck.edge[3][count+1][1] - truck.edge[3][count][1])**2)
                     if move > current_segment:
                         move = move - current_segment
                         count = count + 1
                         continue
-                    x2 = i.edge[3][count+1][0]*1500
-                    y2 = i.edge[3][count+1][1]*1500
-                    x1 = i.edge[3][count][0]*1500
-                    y1 = i.edge[3][count][1]*1500
+                    x2 = truck.edge[3][count+1][0]
+                    y2 = truck.edge[3][count+1][1]
+                    x1 = truck.edge[3][count][0]
+                    y1 = truck.edge[3][count][1]
                     x1 = x1 + float(move/current_segment)*(x2-x1)
                     y1 = y1 + float(move/current_segment)*(y2-y1)
                     location = (int(x1),int(y1))
                     break
+                if truck.location[1][2] == truck.location[1][3]:
+                    location = truck.graph.get_coordinates(truck.location[1][1])
                     
                 pygame.draw.circle(self.screen, (0,200,0),location,5)
                     
                 
             else:
                 ### ONLY WORKS IF PATH IS STRAIGHT ###
-                #coordinates = i.graph.get_coordinates(i.location[1][0])
-                step = float(i.location[1][2])/float(i.location[1][3])
-                x = coordinates[0] + step*i.delta[0]
-                y = coordinates[1] + step*i.delta[1]
+                x = coordinates[0] + step*truck.delta[0]
+                y = coordinates[1] + step*truck.delta[1]
                 location = (int(x),int(y))
                 pygame.draw.circle(self.screen, (0,200,0),location,5)
         
         
-            #Add up segments to get total length
             
             
             

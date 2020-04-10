@@ -9,11 +9,10 @@ print "\nEdges: ", myWorld.Edges
 
 print "\nVertices: ", myWorld.Verticies
 
+print "\nGraph: ", myWorld.graph.neighbors, "\n\n"
+
 
 myWorld.runSimulation(10)
 
-
-#Test Case:
-#2 -> 9 -> 129 -> 146
 
 
