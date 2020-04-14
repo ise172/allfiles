@@ -1,7 +1,6 @@
 from Classes.World import World
 
 
-# GitHub: to work on the code together online
 
 myWorld = World()
 

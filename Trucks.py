@@ -3,38 +3,35 @@ Created on Mar 27, 2020
 
 @author: Pierre
 '''
-from Classes.Graph import Graph
 
 class Trucks:
-    
+    #Initializes the truck object with its path, graph and location
     def __init__(self, path, graph):
         self.graph = graph
         self.vertex = True
         self.path = path
         self.cost = 0
-        self.location = (self.vertex,(0,0,0, self.cost))
+        self.location = (self.vertex,(0,0,0, self.cost)) #(Vertex/Edge, (from node u, to node v, traveled x minutes, out of cost c))
         self.delta = (0,0)
         self.edge = 0
 
-        
+    #Updates the truck locations
     def update_truck_location(self):
-        #If the truck has reached its final destination, skip this method
+        #If the truck has reached its final destination, skip this method (ie return now)
         if len(self.path) <= 1:
             return
-        #Check if truck is at a node. If it is, the new destination is the next node in the path and we are on a new trip so the cost and deltaX/Y must be updated
+        #Check if truck is at a node. If it is, we must progress to a new edge (u,v) so the cost and deltaX/Y must be updated to correspond to this edge
         if self.location[0] == True:
-            self.cost = self.graph.get_cost(self.path[0],self.path[1])
-            self.location = (False,(self.path[0],self.path[1],0,self.cost))
-            current = self.graph.get_coordinates(self.path[0])
-            destination = self.graph.get_coordinates(self.path[1])
-            self.delta = (destination[0]-current[0], destination[1]-current[1])
+            self.cost = self.graph.get_cost(self.path[0],self.path[1]) #updates the cost of this edge
+            self.location = (False,(self.path[0],self.path[1],0,self.cost)) #updates the location of the truck
+            u = self.graph.get_coordinates(self.path[0]) 
+            v = self.graph.get_coordinates(self.path[1])
+            self.delta = (v[0]-u[0], v[1]-u[1])
             self.edge = self.graph.get_edge(self.path[0],self.path[1])
-        
-        temp1 = self.location[1]
-        temp2 = temp1[2]
-        temp2 = temp2 + 1       
-        self.location = (False, (self.path[0],self.path[1],temp2,self.cost))
-        if self.location[1][2] == self.location[1][3]:
-            self.location = (True,(self.path[0],self.path[1],temp2,self.cost))
+        #Increments the distance along the path by 1 minute
+        temp = self.location[1][2] + 1    
+        self.location = (False, (self.path[0],self.path[1],temp,self.cost))
+        #If the truck is at a node, the self.vertex boolean becomes true and we pop the first element off the path so it represents the remaining path to be traveled
+        if self.location[1][2] == self.location[1][3]: 
+            self.location = (True,(self.path[0],self.path[1],temp,self.cost))
             self.path.pop(0)
-          
