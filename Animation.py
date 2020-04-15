@@ -11,6 +11,7 @@ import math
 class Animation():
     #Initializes the animation and variables needed
     def __init__(self, graph):
+        self.graph = graph
         self.Edges = graph.Edges
         self.Verticies = graph.Verticies
         self.dimx = 1500
@@ -18,14 +19,18 @@ class Animation():
         self.font1  = pygame.font.SysFont('Comic Sans MS', 30)
         self.font2  = pygame.font.SysFont('Comic Sans MS', 12)
         self.time = 0
+        self.Warehouses = []
+        self.ProductionLines = []
     
     #Creates the pygame window to display the animation
-    def initialize_animation(self):
+    def initialize_animation(self, warehouses,productionLines):
         pygame.init()
         self.screen = pygame.display.set_mode((self.dimx,self.dimy))
         pygame.display.set_caption("S-LaBuT")
         self.background = self.screen.convert()
         self.clock = pygame.time.Clock()
+        self.Warehouses = warehouses
+        self.ProductionLines = productionLines
     
     #Updates the animation window by displaying the time and drawing the graphs and trucks (This function is called every minute of the simulation)
     def update_animation(self,trucks): 
@@ -33,9 +38,11 @@ class Animation():
         Animation.draw_time(self)
         Animation.draw_edges(self)
         Animation.draw_verticies(self)
+        Animation.draw_wharehouses(self)
+        Animation.draw_production_lines(self)
         Animation.display_truck_locations(self, trucks)
         pygame.display.flip()
-        pygame.time.delay(10)
+        pygame.time.delay(500)
     
     #Displays the time in the top left corner of the window
     def draw_time(self):
@@ -56,6 +63,20 @@ class Animation():
             textrect.centery = center[1]
             self.screen.blit(text, textrect)
     
+    #Draws the warehouses on the graphs (in orange)
+    def draw_wharehouses(self):
+        for warehouse in self.Warehouses:
+            location = self.graph.get_coordinates(warehouse['location'])
+            pygame.draw.circle(self.screen,(255,100,10),location,10)
+    
+    #Draws the Production lines of the graph (in yellow)
+    def draw_production_lines(self):
+        #prodLine_colors = {'L1':(255,255,0),'L2':(200,200,0),'L3':(150,150,0),'L4':(100,100,0)}
+        for line in self.ProductionLines:
+            location = self.graph.get_coordinates(line['location'])
+            pygame.draw.circle(self.screen,(255,255,0),location,10)
+            #pygame.draw.circle(self.screen,prodLine_colors[line['type']],location,10)
+        
     #Loops through the list of edges and draws red lines representing the edges. If the edge is curved, loop through each of the points on the curve and draw small line segments.
     def draw_edges(self):
         for edge in self.Edges:

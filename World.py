@@ -34,7 +34,7 @@ class World(AbstractWorld):
 		for i,t in enumerate(trucks):
 			print "vehicle %d: %s"%(i, str(t)) 
 		
-		self.animation.initialize_animation()  #Initializes the window that will display the animation of the simulation
+		self.animation.initialize_animation(Warehouses,ProductionLines)  #Initializes the window that will display the animation of the simulation
 		
 		#This for loop keeps track of the time and one iteration is equivalent to a minute of the work day
 		for t in xrange(initialTime,finalTime):
@@ -48,6 +48,10 @@ class World(AbstractWorld):
 					print c
 					print "Production Process: ", c.productionProcess
 					print "Final Location: ", c.finalLocation
+					
+					##############################
+					#This part is no longer needed for part 2?
+					##############################
 					## GENERATE TWO RANDOM VERTICES
 					range = len(self.Verticies)
 					start_node = self.Verticies[random.randrange(range)][0]
@@ -58,6 +62,9 @@ class World(AbstractWorld):
 					path = self.graph.dijkstra(start_node, end_node)
 					## CREATE NEW TRUCK OBJECT AND ADD TO LIST OF TRUCKS
 					self.trucks.append(Trucks(path, self.graph))
+					
+					
+					
 			#Update each truck's location and update the animation window 
 			for i,truck in enumerate(self.trucks):
 				truck.update_truck_location()

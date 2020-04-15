@@ -13,6 +13,7 @@ class Graph:
         self.Edges = edges
         self.Verticies = verticies
 
+
     #Creates the graph by scaling the coordinate values and adding the edges to the graph
     def create_graph(self):
         #These first two while loops scale the values to fit the size of the window by multiplying every coordinate value by 1500
@@ -29,28 +30,38 @@ class Graph:
             j = j + 1
         #Adds each edge to the graph object
         for element in self.Edges:
-            self.add_edge(element[0], element[1], element[2])
+            self.add_edge(element[0], element[1], element[2], element[4])
     
-    #Adds the edge (u,v) with cost "c" to the graph if v and u are not in the graph already
-    def add_edge(self,u,v,c): 
+    #Adds the edge (u,v) with cost "c" to the graph if v and u are not in the graph already. d is  the direction of the edge
+    def add_edge(self,u,v,c,d): 
         if u not in self.neighbors:
             self.neighbors[u]=[]
         if v not in self.neighbors:
             self.neighbors[v]=[]
-        if u > v:
-            u, v = v, u
-        if (u,v) not in self.cost:
+        #if u > v:
+        #    u, v = v, u
+        if ((u,v) not in self.cost) and ((v,u) not in self.cost):
             self.neighbors[u].append(v)
             self.neighbors[v].append(u)
+            #self.cost[(u,v)] = c
+        if d == 'B':
+           #both directions
+           self.cost[(u,v)] = c
+           self.cost[(v,u)] = c
+        if d == 'OneWayB':
+            #only from second node to first
+            self.cost[(v,u)] = c
+        if d == 'OneWayA': 
+            #only from first to second
             self.cost[(u,v)] = c
 
     #Returns the cost of edge (u,v)
     def get_cost(self, u,v):
-        if u > v:
-            u, v = v, u
+        #if u > v:
+        #    u, v = v, u
         if (u,v) in self.cost:
             return self.cost[(u,v)]
-        return None
+        return 1000
 
     #Returns the coordinates of a given node
     def get_coordinates(self,node):
