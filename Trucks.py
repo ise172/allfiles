@@ -6,14 +6,15 @@ Created on Mar 27, 2020
 
 class Trucks:
     #Initializes the truck object with its path, graph and location
-    def __init__(self, path, graph):
+    def __init__(self, location, graph, capacity):
         self.graph = graph
         self.vertex = True
-        self.path = path
-        self.cost = 0
-        self.location = (self.vertex,(0,0,0, self.cost)) #(Vertex/Edge, (from node u, to node v, traveled x minutes, out of cost c))
-        self.delta = (0,0)
-        self.edge = 0
+        self.path = [location]
+        self.cost = 1000
+        self.location = (self.vertex,(location,location,0, self.cost)) #(Vertex/Edge, (from node u, to node v, traveled x minutes, out of cost c))
+        self.edge = [0, 0, 0, [(0, 0), (0, 0)], 'B']
+        self.capacity = capacity
+        self.occupied = False
 
     #Updates the truck locations
     def update_truck_location(self):
@@ -24,9 +25,6 @@ class Trucks:
         if self.location[0] == True:
             self.cost = self.graph.get_cost(self.path[0],self.path[1]) #updates the cost of this edge
             self.location = (False,(self.path[0],self.path[1],0,self.cost)) #updates the location of the truck
-            u = self.graph.get_coordinates(self.path[0]) 
-            v = self.graph.get_coordinates(self.path[1])
-            self.delta = (v[0]-u[0], v[1]-u[1])
             self.edge = self.graph.get_edge(self.path[0],self.path[1])
         #Increments the distance along the path by 1 minute
         temp = self.location[1][2] + 1    

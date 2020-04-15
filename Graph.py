@@ -12,10 +12,14 @@ class Graph:
         self.cost = {}  # key - edge, value - cost
         self.Edges = edges
         self.Verticies = verticies
+        self.Warehouses = []
+        self.ProductionLines = []
 
 
     #Creates the graph by scaling the coordinate values and adding the edges to the graph
-    def create_graph(self):
+    def create_graph(self,warehouses,productionLines):
+        self.Warehouses = warehouses
+        self.ProductionLines = productionLines        
         #These first two while loops scale the values to fit the size of the window by multiplying every coordinate value by 1500
         i,j = 0,0
         while i < len(self.Verticies):
@@ -32,6 +36,7 @@ class Graph:
         for element in self.Edges:
             self.add_edge(element[0], element[1], element[2], element[4])
     
+    
     #Adds the edge (u,v) with cost "c" to the graph if v and u are not in the graph already. d is  the direction of the edge
     def add_edge(self,u,v,c,d): 
         if u not in self.neighbors:
@@ -45,9 +50,9 @@ class Graph:
             self.neighbors[v].append(u)
             #self.cost[(u,v)] = c
         if d == 'B':
-           #both directions
-           self.cost[(u,v)] = c
-           self.cost[(v,u)] = c
+            #both directions
+            self.cost[(u,v)] = c
+            self.cost[(v,u)] = c
         if d == 'OneWayB':
             #only from second node to first
             self.cost[(v,u)] = c
@@ -104,7 +109,7 @@ class Graph:
         path.append(end_node)
         self.get_path(start_node,end_node,path,pre)    
         path.reverse()     #get_path() returns the path in reverse order so this line fixes that
-        print "PATH: ", path, "\nLength of path: ", d[end_node], " \n"
+        #print "PATH: ", path, "\nLength of path: ", d[end_node], " \n"
         return path
     
     #This is a recursive function that is called within the dijkstra algorithm that gets the path from the list of previous nodes
@@ -125,3 +130,49 @@ class Graph:
                 else: #reverses the list of coordinates if the start node and end node are in the wrong order
                     edge[3].reverse()
                     return edge
+
+    #This function finds the truck that is closest to the a warehouse with the correct resource. Then, is finds the shortest path from that truck's current location to that ware house, and adds the shortest path
+    # from that warehouse to the closest proper production line. Assigns this full path to the truck. (ie: The truck will pick up supplies from the warehouse and bring them to the production line)
+    def assign_trucks_from_warehouse_to_productionLine(self,prodProcess,trucks):
+        #does this for each part of the production process so that the material is already waiting at the production line when needed.
+        for process in prodProcess:
+            print "\nprocess: ", process
+            distance,index,count = 1000,0,0
+            warehouses,productionLines = [], []
+            for warehouse in self.Warehouses: #Finds list the warehouses that can be used for this process
+                if warehouse['type'] == process['resourceNeeded']:
+                    warehouses.append(warehouse)
+            for prodLine in self.ProductionLines: # Finds list of the production lines that can be used for this process
+                if prodLine['type'] == process['processinLine']:
+                    productionLines.append(prodLine)
+            for truck in trucks: # Loops through all of the trucks, if it does not have the capacity for the materials or if it is busy, the truck is skipped and the next one is considered
+                if truck.capacity < process['materialNeeded[tons]'] or truck.occupied:
+                    count = count + 1
+                    continue
+                for warehouse in warehouses: #for each warehouse that could be used, find the shortest path distance and update it if it is shorter than the current shortest distance
+                    temp = self.dijkstra(truck.location[1][0],warehouse['location']) ##takes a long time/causes simulation to be slow!!
+                    length = len(temp)
+                    if length < distance:
+                        distance = length
+                        Wpath = temp
+                        index = count #keeps track of which truck's path we need to update
+                count = count + 1
+            if not trucks[index].occupied: # if this truck is available, update the path, occupied boolean, and capacity
+                trucks[index].path = Wpath
+                trucks[index].occupied = True
+                trucks[index].capacity = trucks[index].capacity - process['materialNeeded[tons]']
+            else: # otherwise, return bc no trucks are available
+                print "No available trucks"
+                return
+            distance = 1000
+            for line in productionLines: #Similar process for the production line, except we know the truck and starting location, so we just need to find the path to the closes prod. line
+                temp = self.dijkstra(Wpath[len(Wpath)-1],line['location'])
+                length = len(temp)
+                if length < distance:
+                    distance = length
+                    PLpath = temp
+            PLpath.pop(0)
+            while len(PLpath) > 0:
+                trucks[index].path.append(PLpath.pop(0))
+            print "path of truck ", index, ": ", trucks[index].path    # This the full path from the trucks original location to the production line, passing through the warehouse
+

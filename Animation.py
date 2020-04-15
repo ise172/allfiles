@@ -19,18 +19,15 @@ class Animation():
         self.font1  = pygame.font.SysFont('Comic Sans MS', 30)
         self.font2  = pygame.font.SysFont('Comic Sans MS', 12)
         self.time = 0
-        self.Warehouses = []
-        self.ProductionLines = []
     
     #Creates the pygame window to display the animation
-    def initialize_animation(self, warehouses,productionLines):
+    def initialize_animation(self,graph):
         pygame.init()
         self.screen = pygame.display.set_mode((self.dimx,self.dimy))
         pygame.display.set_caption("S-LaBuT")
         self.background = self.screen.convert()
         self.clock = pygame.time.Clock()
-        self.Warehouses = warehouses
-        self.ProductionLines = productionLines
+        self.graph = graph
     
     #Updates the animation window by displaying the time and drawing the graphs and trucks (This function is called every minute of the simulation)
     def update_animation(self,trucks): 
@@ -65,14 +62,14 @@ class Animation():
     
     #Draws the warehouses on the graphs (in orange)
     def draw_wharehouses(self):
-        for warehouse in self.Warehouses:
+        for warehouse in self.graph.Warehouses:
             location = self.graph.get_coordinates(warehouse['location'])
             pygame.draw.circle(self.screen,(255,100,10),location,10)
     
     #Draws the Production lines of the graph (in yellow)
     def draw_production_lines(self):
         #prodLine_colors = {'L1':(255,255,0),'L2':(200,200,0),'L3':(150,150,0),'L4':(100,100,0)}
-        for line in self.ProductionLines:
+        for line in self.graph.ProductionLines:
             location = self.graph.get_coordinates(line['location'])
             pygame.draw.circle(self.screen,(255,255,0),location,10)
             #pygame.draw.circle(self.screen,prodLine_colors[line['type']],location,10)
@@ -98,34 +95,41 @@ class Animation():
     #loops through the list of truck objects and displays the location of each one
     def display_truck_locations(self,trucks):
         for truck in trucks:
-            coordinates = truck.graph.get_coordinates(truck.location[1][0]) #coordinates of the start node
-            step = float(truck.location[1][2])/float(truck.location[1][3]) #how far along the path from node A to node B as a decimal
-            #CURVE
-            if len(truck.edge[3]) > 2:
-                length,n,count = 0,len(truck.edge[3]),0
-                while count < n-1:#This while loop gets the total length of the curved path
-                    length = length + math.sqrt((truck.edge[3][count+1][0]-truck.edge[3][count][0])**2 + (truck.edge[3][count+1][1] - truck.edge[3][count][1])**2) 
-                    count = count +1
-                move = step*length #determines how far we have to move from the start node
-                count = 0
-                while count < n-1: #This for loop determines which of the smaller segments we are on and then gets the new location
-                    current_segment = math.sqrt((truck.edge[3][count+1][0]-truck.edge[3][count][0])**2 + (truck.edge[3][count+1][1] - truck.edge[3][count][1])**2)
-                    if move > current_segment:
-                        move = move - current_segment
-                        count = count + 1
-                        continue
-                    x2,y2 = truck.edge[3][count+1][0],truck.edge[3][count+1][1]
-                    x1,y1 = truck.edge[3][count][0], truck.edge[3][count][1]
-                    location = (int(x1 + float(move/current_segment)*(x2-x1)),int(y1 + float(move/current_segment)*(y2-y1)))
-                    break
-                if truck.location[1][2] == truck.location[1][3]: #ensures that the location of the dot is at the node when we arrive at the vertex (offsets the sounding errors)
-                    location = truck.graph.get_coordinates(truck.location[1][1])
-            #STRAIGHT LINE
+            if len(truck.path) <= 1:
+                location = truck.graph.get_coordinates(truck.location[1][1])
+                pygame.draw.circle(self.screen, (0,200,0),location,5) #Draw a green dot to represent the truck
             else:
-                x = coordinates[0] + step*truck.delta[0]
-                y = coordinates[1] + step*truck.delta[1]
-                location = (int(x),int(y))
-            pygame.draw.circle(self.screen, (0,200,0),location,5) #Draw a green dot to represent the truck
+                coordinates = truck.graph.get_coordinates(truck.location[1][0]) #coordinates of the start node
+                step = float(truck.location[1][2])/float(truck.location[1][3]) #how far along the path from node A to node B as a decimal
+                #CURVE
+                if len(truck.edge[3]) > 2:
+                    length,n,count = 0,len(truck.edge[3]),0
+                    while count < n-1:#This while loop gets the total length of the curved path
+                        length = length + math.sqrt((truck.edge[3][count+1][0]-truck.edge[3][count][0])**2 + (truck.edge[3][count+1][1] - truck.edge[3][count][1])**2) 
+                        count = count +1
+                    move = step*length #determines how far we have to move from the start node
+                    count = 0
+                    while count < n-1: #This for loop determines which of the smaller segments we are on and then gets the new location
+                        current_segment = math.sqrt((truck.edge[3][count+1][0]-truck.edge[3][count][0])**2 + (truck.edge[3][count+1][1] - truck.edge[3][count][1])**2)
+                        if move > current_segment:
+                            move = move - current_segment
+                            count = count + 1
+                            continue
+                        x2,y2 = truck.edge[3][count+1][0],truck.edge[3][count+1][1]
+                        x1,y1 = truck.edge[3][count][0], truck.edge[3][count][1]
+                        location = (int(x1 + float(move/current_segment)*(x2-x1)),int(y1 + float(move/current_segment)*(y2-y1)))
+                        break
+                    if truck.location[1][2] == truck.location[1][3]: #ensures that the location of the dot is at the node when we arrive at the vertex (offsets the sounding errors)
+                        location = truck.graph.get_coordinates(truck.location[1][1])
+                #STRAIGHT LINE
+                else:
+                    u = truck.graph.get_coordinates(truck.path[0]) 
+                    v = truck.graph.get_coordinates(truck.path[1])
+                    delta = (v[0]-u[0], v[1]-u[1])
+                    x = coordinates[0] + step*delta[0]
+                    y = coordinates[1] + step*delta[1]
+                    location = (int(x),int(y))
+                pygame.draw.circle(self.screen, (0,200,0),location,5) #Draw a green dot to represent the truck
         
         
             

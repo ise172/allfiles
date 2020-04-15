@@ -15,7 +15,6 @@ class World(AbstractWorld):
 	def __init__(self):
 		AbstractWorld.__init__(self)
 		self.graph = Graph(self.Edges,self.Verticies)
-		self.graph.create_graph()
 		self.animation = Animation(self.graph)
 		self.screen = pygame.display.set_mode((600, 800))
 		self.clock = pygame.time.Clock()
@@ -26,15 +25,17 @@ class World(AbstractWorld):
 		
 		#Get the lists of warehouses, production lines, and trucks that the company owns and prints each of them 
 		Warehouses = self.getLocationOfWarehouses()
-		print "Warehouses: ", Warehouses, "\n"
 		ProductionLines = self.getProductionLines()
-		print "Production Lines: ", ProductionLines, "\n"		
+		print "Production Lines: ", ProductionLines, "\n" , "Warehouses: ", Warehouses, "\n"		
 		trucks = self.getInitialTruckLocations()
 		print "Vehicles: "
 		for i,t in enumerate(trucks):
-			print "vehicle %d: %s"%(i, str(t)) 
+			print "vehicle %d: %s"%(i, str(t))
+			self.trucks.append(Trucks(t.currentPossition[1],self.graph,t.capacity))#creates truck objects for each truck
 		
-		self.animation.initialize_animation(Warehouses,ProductionLines)  #Initializes the window that will display the animation of the simulation
+		self.graph.create_graph(Warehouses,ProductionLines)
+		
+		self.animation.initialize_animation(self.graph)  #Initializes the window that will display the animation of the simulation
 		
 		#This for loop keeps track of the time and one iteration is equivalent to a minute of the work day
 		for t in xrange(initialTime,finalTime):
@@ -45,30 +46,19 @@ class World(AbstractWorld):
 				print "\nNew orders:\n"
 				#For each new order, print the production process, final location, path, and add a new truck
 				for c in newOrders:
-					print c
+					print "\n", c
 					print "Production Process: ", c.productionProcess
 					print "Final Location: ", c.finalLocation
 					
-					##############################
-					#This part is no longer needed for part 2?
-					##############################
-					## GENERATE TWO RANDOM VERTICES
-					range = len(self.Verticies)
-					start_node = self.Verticies[random.randrange(range)][0]
-					end_node = self.Verticies[random.randrange(range)][0]
-					while end_node == start_node: #Ensures that the start and end vertices are not the same
-						end_node = self.Verticies[random.randrange(range)][0]
-					## FIND THE SHORTEST PATH
-					path = self.graph.dijkstra(start_node, end_node)
-					## CREATE NEW TRUCK OBJECT AND ADD TO LIST OF TRUCKS
-					self.trucks.append(Trucks(path, self.graph))
 					
+					##Find truck that is closest to warehouse of correct type
+					self.graph.assign_trucks_from_warehouse_to_productionLine(c.productionProcess, self.trucks)
 					
+
 					
-			#Update each truck's location and update the animation window 
+			#Update each truck's location and update the animation window 			
 			for i,truck in enumerate(self.trucks):
 				truck.update_truck_location()
-				print "location of truck ", i, ": ", truck.location
 			self.animation.update_animation(self.trucks)
 			
 			for event in pygame.event.get():
