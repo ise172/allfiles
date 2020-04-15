@@ -133,7 +133,7 @@ class Graph:
 
     #This function finds the truck that is closest to the a warehouse with the correct resource. Then, is finds the shortest path from that truck's current location to that ware house, and adds the shortest path
     # from that warehouse to the closest proper production line. Assigns this full path to the truck. (ie: The truck will pick up supplies from the warehouse and bring them to the production line)
-    def assign_trucks_from_warehouse_to_productionLine(self,prodProcess,trucks):
+    def find_truck_to_get_material_from_warehouse_to_productionLine(self,prodProcess,trucks):
         #does this for each part of the production process so that the material is already waiting at the production line when needed.
         for process in prodProcess:
             print "\nprocess: ", process

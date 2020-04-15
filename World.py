@@ -52,7 +52,7 @@ class World(AbstractWorld):
 					
 					
 					##Find truck that is closest to warehouse of correct type
-					self.graph.assign_trucks_from_warehouse_to_productionLine(c.productionProcess, self.trucks)
+					self.graph.find_truck_to_get_material_from_warehouse_to_productionLine(c.productionProcess, self.trucks)
 					
 
 					
