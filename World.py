@@ -5,6 +5,7 @@ from Classes.Animation import Animation
 from Classes.Graph import Graph
 from  Classes.AbstractWorld import AbstractWorld
 import pygame
+from networkx.algorithms.shortest_paths.dense import floyd_warshall
 pygame.font.init() 
 import random
 
@@ -34,6 +35,7 @@ class World(AbstractWorld):
 			self.trucks.append(Trucks(t.currentPossition[1],self.graph,t.capacity))#creates truck objects for each truck
 		
 		self.graph.create_graph(Warehouses,ProductionLines)
+		self.graph.initialize_floyd_warshall()
 		
 		self.animation.initialize_animation(self.graph)  #Initializes the window that will display the animation of the simulation
 		
@@ -50,6 +52,16 @@ class World(AbstractWorld):
 					print "Production Process: ", c.productionProcess
 					print "Final Location: ", c.finalLocation
 					
+					'''
+					#Tests to see if the floyd marshall algorithm is working (issue: it works for some paths but seems to have trouble with some paths/ one way roads and returns a path length of infinity, even though dijkstra can find a shortest path)
+					start = random.randrange(1,100)
+					end = random.randrange(1,100)
+					print "From ", start, " to ", end
+					path1 = self.graph.floyd_warshall(start, end)
+					print "floyd warshall path: ", path1
+					path2 = self.graph.dijkstra(start, end)
+					print "dijkstra path: ", path2
+					'''
 					
 					##Find truck that is closest to warehouse of correct type
 					self.graph.find_truck_to_get_material_from_warehouse_to_productionLine(c.productionProcess, self.trucks)

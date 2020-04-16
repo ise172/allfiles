@@ -14,6 +14,7 @@ class Graph:
         self.Verticies = verticies
         self.Warehouses = []
         self.ProductionLines = []
+        self.FW_next = {}
 
 
     #Creates the graph by scaling the coordinate values and adding the edges to the graph
@@ -43,12 +44,9 @@ class Graph:
             self.neighbors[u]=[]
         if v not in self.neighbors:
             self.neighbors[v]=[]
-        #if u > v:
-        #    u, v = v, u
         if ((u,v) not in self.cost) and ((v,u) not in self.cost):
             self.neighbors[u].append(v)
             self.neighbors[v].append(u)
-            #self.cost[(u,v)] = c
         if d == 'B':
             #both directions
             self.cost[(u,v)] = c
@@ -56,17 +54,17 @@ class Graph:
         if d == 'OneWayB':
             #only from second node to first
             self.cost[(v,u)] = c
+            #self.cost[(u,v)] = np.inf
         if d == 'OneWayA': 
             #only from first to second
             self.cost[(u,v)] = c
+            #self.cost[(v,u)] = np.inf
 
     #Returns the cost of edge (u,v)
     def get_cost(self, u,v):
-        #if u > v:
-        #    u, v = v, u
         if (u,v) in self.cost:
             return self.cost[(u,v)]
-        return 1000
+        return np.inf
 
     #Returns the coordinates of a given node
     def get_coordinates(self,node):
@@ -82,6 +80,52 @@ class Graph:
                 return True
             else:
                 return False
+    
+    # Runs the Floyd Warshall algorithm to find the shortest path from every combination of nodes
+    def initialize_floyd_warshall(self):
+        n = len(self.neighbors)
+        D = np.ones([n,n])*np.inf
+        D[range(n),range(n)] = 0
+        
+        map={}
+        V = sorted(self.neighbors.keys())
+        for i,v in enumerate(V):
+            map[v]=i
+        
+        for e in self.cost:
+            D[map[e[0]],map[e[1]]] = self.cost[e]
+            D[map[e[1]],map[e[0]]] = self.cost[e]
+        
+        
+        for i in V:
+            for j in V:
+                self.FW_next[i,j] = '?'
+        
+        for e in self.cost:
+            self.FW_next[e[0],e[1]] = e[1]
+            self.FW_next[e[1],e[0]] = e[0]
+        
+        for k in V:
+            for i in V:
+                for j in V:
+                    if D[map[i],map[k]]+D[map[k],map[j]] < D[map[i],map[j]]:
+                        D[map[i],map[j]] = D[map[i],map[k]]+D[map[k],map[j]]
+                        self.FW_next[i,j] = self.FW_next[i,k]
+    
+    #Finds the shortest path from a start node to an end node using the next dictionary of the floyd marshall algorithm
+    def floyd_warshall(self,fromNode,toNode):
+        cost = 0
+        path = [] 
+        while fromNode != toNode:
+            path.append(fromNode)
+            temp = fromNode
+            fromNode = self.FW_next[fromNode,toNode]
+            cost = cost + self.get_cost(temp, fromNode)
+        path.append(toNode)
+        print "Cost of floyd warshall path: ", cost
+        return path
+        
+            
     
     #This function is dijkstra's shortest path algorithm that returns the path from a start node to an end node
     def dijkstra(self,start_node, end_node):
@@ -110,6 +154,7 @@ class Graph:
         self.get_path(start_node,end_node,path,pre)    
         path.reverse()     #get_path() returns the path in reverse order so this line fixes that
         #print "PATH: ", path, "\nLength of path: ", d[end_node], " \n"
+        print "Cost of dijkstra path: ", d[end_node]
         return path
     
     #This is a recursive function that is called within the dijkstra algorithm that gets the path from the list of previous nodes

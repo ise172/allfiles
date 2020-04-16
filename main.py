@@ -6,9 +6,9 @@ For each order:
 - transport material (at least the number of tons needed(maybe more?) to the closest Production Line of the proper type
     - Along the shortest path
 - wait for the processing time to be over
+- transport WIP inventory to the next process production line
+- wait for the processing time to be over
 - transport finished product to the Final location
-
-
 
 '''
 
