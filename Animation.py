@@ -39,7 +39,7 @@ class Animation():
         Animation.draw_production_lines(self)
         Animation.display_truck_locations(self, trucks)
         pygame.display.flip()
-        pygame.time.delay(500)
+        pygame.time.delay(100)
     
     #Displays the time in the top left corner of the window
     def draw_time(self):

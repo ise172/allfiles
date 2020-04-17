@@ -54,11 +54,9 @@ class Graph:
         if d == 'OneWayB':
             #only from second node to first
             self.cost[(v,u)] = c
-            #self.cost[(u,v)] = np.inf
         if d == 'OneWayA': 
             #only from first to second
             self.cost[(u,v)] = c
-            #self.cost[(v,u)] = np.inf
 
     #Returns the cost of edge (u,v)
     def get_cost(self, u,v):
@@ -86,17 +84,20 @@ class Graph:
         n = len(self.neighbors)
         D = np.ones([n,n])*np.inf
         D[range(n),range(n)] = 0
-        
         map={}
         V = sorted(self.neighbors.keys())
         for i,v in enumerate(V):
             map[v]=i
         
-        for e in self.cost:
-            D[map[e[0]],map[e[1]]] = self.cost[e]
-            D[map[e[1]],map[e[0]]] = self.cost[e]
-        
-        
+        for edge in self.Edges: 
+            if edge[4] == 'B':
+                D[map[edge[0]],map[edge[1]]] = self.get_cost(edge[0],edge[1])
+                D[map[edge[1]],map[edge[0]]] = self.get_cost(edge[1],edge[0])
+            if edge[4] == 'OneWayB':
+                D[map[edge[1]],map[edge[0]]] = self.get_cost(edge[1],edge[0])
+            if edge[4] == 'OneWayA':
+                D[map[edge[0]],map[edge[1]]] = self.get_cost(edge[0],edge[1]) 
+
         for i in V:
             for j in V:
                 self.FW_next[i,j] = '?'
@@ -122,10 +123,9 @@ class Graph:
             fromNode = self.FW_next[fromNode,toNode]
             cost = cost + self.get_cost(temp, fromNode)
         path.append(toNode)
-        print "Cost of floyd warshall path: ", cost
-        return path
-        
-            
+        return path        
+    
+    
     
     #This function is dijkstra's shortest path algorithm that returns the path from a start node to an end node
     def dijkstra(self,start_node, end_node):
@@ -154,17 +154,16 @@ class Graph:
         self.get_path(start_node,end_node,path,pre)    
         path.reverse()     #get_path() returns the path in reverse order so this line fixes that
         #print "PATH: ", path, "\nLength of path: ", d[end_node], " \n"
-        print "Cost of dijkstra path: ", d[end_node]
         return path
     
     #This is a recursive function that is called within the dijkstra algorithm that gets the path from the list of previous nodes
+    
     def get_path(self,start_node,current_node,path,pre):
         if current_node == start_node:
             return path
         else:
             path.append(pre[current_node])
             self.get_path(start_node,pre[current_node],path,pre)
-    
     
     #This function loops through every edge and return the edge from a start node to an end node
     def get_edge(self, start, end):
@@ -175,49 +174,3 @@ class Graph:
                 else: #reverses the list of coordinates if the start node and end node are in the wrong order
                     edge[3].reverse()
                     return edge
-
-    #This function finds the truck that is closest to the a warehouse with the correct resource. Then, is finds the shortest path from that truck's current location to that ware house, and adds the shortest path
-    # from that warehouse to the closest proper production line. Assigns this full path to the truck. (ie: The truck will pick up supplies from the warehouse and bring them to the production line)
-    def find_truck_to_get_material_from_warehouse_to_productionLine(self,prodProcess,trucks):
-        #does this for each part of the production process so that the material is already waiting at the production line when needed.
-        for process in prodProcess:
-            print "\nprocess: ", process
-            distance,index,count = 1000,0,0
-            warehouses,productionLines = [], []
-            for warehouse in self.Warehouses: #Finds list the warehouses that can be used for this process
-                if warehouse['type'] == process['resourceNeeded']:
-                    warehouses.append(warehouse)
-            for prodLine in self.ProductionLines: # Finds list of the production lines that can be used for this process
-                if prodLine['type'] == process['processinLine']:
-                    productionLines.append(prodLine)
-            for truck in trucks: # Loops through all of the trucks, if it does not have the capacity for the materials or if it is busy, the truck is skipped and the next one is considered
-                if truck.capacity < process['materialNeeded[tons]'] or truck.occupied:
-                    count = count + 1
-                    continue
-                for warehouse in warehouses: #for each warehouse that could be used, find the shortest path distance and update it if it is shorter than the current shortest distance
-                    temp = self.dijkstra(truck.location[1][0],warehouse['location']) ##takes a long time/causes simulation to be slow!!
-                    length = len(temp)
-                    if length < distance:
-                        distance = length
-                        Wpath = temp
-                        index = count #keeps track of which truck's path we need to update
-                count = count + 1
-            if not trucks[index].occupied: # if this truck is available, update the path, occupied boolean, and capacity
-                trucks[index].path = Wpath
-                trucks[index].occupied = True
-                trucks[index].capacity = trucks[index].capacity - process['materialNeeded[tons]']
-            else: # otherwise, return bc no trucks are available
-                print "No available trucks"
-                return
-            distance = 1000
-            for line in productionLines: #Similar process for the production line, except we know the truck and starting location, so we just need to find the path to the closes prod. line
-                temp = self.dijkstra(Wpath[len(Wpath)-1],line['location'])
-                length = len(temp)
-                if length < distance:
-                    distance = length
-                    PLpath = temp
-            PLpath.pop(0)
-            while len(PLpath) > 0:
-                trucks[index].path.append(PLpath.pop(0))
-            print "path of truck ", index, ": ", trucks[index].path    # This the full path from the trucks original location to the production line, passing through the warehouse
-
