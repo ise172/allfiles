@@ -7,6 +7,7 @@ from Classes.AbstractWorld import AbstractWorld
 from Classes.Warehouse import Warehouse
 from Classes.ProductionLine import ProductionLine
 from Classes.ProductionOrder import ProductionOrder
+from Classes.Finance import Finance
 import pygame
 pygame.font.init() 
 import random
@@ -25,6 +26,7 @@ class World(AbstractWorld):
 		self.prodLines = []
 		self.warehouses = []
 		self.openOrders = []
+		self.finances = Finance()
 
 	#Main method that will run the simulation
 	def runSimulation(self, fps=1, initialTime=5*60, finalTime=23*60):
@@ -54,7 +56,6 @@ class World(AbstractWorld):
 		self.graph.initialize_floyd_warshall()
 		self.animation.initialize_animation(self.graph)
 		
-		
 		#This for loop keeps track of the time and one iteration is equivalent to a minute of the work day
 		for t in xrange(initialTime,finalTime):
 			print "\n\n\nTime: %02d:%02d"%(t/60, t%60) #prints the time
@@ -68,31 +69,50 @@ class World(AbstractWorld):
 					print "Production Process: ", c.productionProcess
 					print "Final Location: ", c.finalLocation
 					
-					#makes sure that the production line needed for each process has the necessary inventory, otherwise, stocks up 
+					#makes sure that the production line needed for each process has the necessary inventory, otherwise, sends a truck to stock up 
 					jobLocations = []
+					vehicles = []
 					for process in c.productionProcess:
 						jobs,index = 100,0
 						for i,p in enumerate(self.prodLines):
-							if p.type == process['processinLine']:
+							if p.type == process['processinLine']: #since there are multiple of the same production line, selects the one with the fewest current jobs
 								if p.currentJobs < jobs:
 									jobs = p.currentJobs
 									index = i
-									location = p.location
 						
-						if self.prodLines[index].inventory[process['resourceNeeded']] < process['materialNeeded[tons]'] and not self.prodLines[index].shipmentOnWay:
-							self.prodLines[index].get_resources(process['resourceNeeded'],process['materialNeeded[tons]'],self.trucks,self.graph,self.warehouses)
-						jobLocations.append(location)
-								
+						if self.prodLines[index].inventory[process['resourceNeeded']] < process['materialNeeded[tons]'] and not self.prodLines[index].shipmentOnWay[0]: #checks to see if the selected production line needs to be re-stocked
+							vehicles.append(self.prodLines[index].get_resources(process['resourceNeeded'],process['materialNeeded[tons]'],self.trucks,self.graph,self.warehouses))
+						jobLocations.append(self.prodLines[index])			
 					#Create an order object for this new order
-					self.openOrders.append(ProductionOrder(c.id,c.productionProcess,c.finalLocation,jobLocations))
+					self.openOrders.append(ProductionOrder(c.id,c.productionProcess,c.finalLocation,jobLocations,self.trucks,vehicles,self.graph))
 			
-			#print list of open orders and their progress
+			
+			
+			#For each open order, updates the order and removes it from the list of open orders if it is finished. Then updates the sales and discounts based on the order time
 			for order in self.openOrders:
-				print order.__str__()
-					
-			#Update each truck's location and update the animation window 			
+				#print order.__str__()
+				order.update_order()
+				if order.finished:
+					self.openOrders.remove(order)
+					print "Order ", order.ID, " Finished. Total Time: ", order.totalTime
+					self.finances.update_revenue(order.totalTime) 
+			
+			#Update each truck's location 			
 			for truck in self.trucks:
 				truck.update_truck_location()
+			#Update the holding cost of each for each production line
+			for line in self.prodLines:
+				line.update_holding_cost()
+			
+			#Prints the current finances
+			print self.finances.__str__()
+			
+			#Updates the finances and passes them to the animation to be displayed in the animation
+			self.finances.update_costs(self.trucks, self.prodLines)
+			self.animation.revenue = self.finances.sales - self.finances.discount
+			self.animation.costs = self.finances.transportationCosts + self.finances.holdingCosts
+			
+			#Update the animation
 			self.animation.update_animation(self.trucks)
 			
 			for event in pygame.event.get():

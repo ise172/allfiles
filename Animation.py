@@ -19,6 +19,8 @@ class Animation():
         self.font1  = pygame.font.SysFont('Comic Sans MS', 30)
         self.font2  = pygame.font.SysFont('Comic Sans MS', 12)
         self.time = 0
+        self.revenue = 0
+        self.costs = 0
     
     #Creates the pygame window to display the animation
     def initialize_animation(self,graph):
@@ -33,21 +35,47 @@ class Animation():
     def update_animation(self,trucks): 
         self.screen.fill((255,255,255))
         Animation.draw_time(self)
+        Animation.draw_profit(self)
         Animation.draw_edges(self)
         Animation.draw_verticies(self)
         Animation.draw_wharehouses(self)
         Animation.draw_production_lines(self)
         Animation.display_truck_locations(self, trucks)
         pygame.display.flip()
-        pygame.time.delay(100)
+        #pygame.time.delay(100)
     
     #Displays the time in the top left corner of the window
     def draw_time(self):
         text = self.font1.render("Time: %02d:%02d"%(self.time/60, self.time%60), True, (255, 0, 0), (255, 255, 255))
         textrect = text.get_rect()
         textrect.centerx = 100
-        textrect.centery = 30
+        textrect.centery = 50
         self.screen.blit(text, textrect)
+    
+    #Displays the revenue, cost and profit in the top right corner of the window
+    def draw_profit(self):
+        #Revenue
+        rev = self.font1.render("Revenue: $%d"%(self.revenue), True, (0,100,0),(255,255,255))
+        revrect = rev.get_rect()
+        revrect.centerx = 1300
+        revrect.centery = 50
+        self.screen.blit(rev, revrect)
+        #Costs
+        cost = self.font1.render("Costs: $%d"%(self.costs), True, (200,0,0),(255,255,255))
+        costrect = cost.get_rect()
+        costrect.centerx = 1300
+        costrect.centery = 100
+        self.screen.blit(cost, costrect)
+        #Profit
+        pygame.draw.line(self.screen,(0,0,0), (1150,125), (1450,125),3)
+        if (self.revenue-self.costs)>0:
+            profit = self.font1.render("Profit: $%d"%(self.revenue-self.costs), True, (0,100,0),(255,255,255))
+        else: 
+            profit = self.font1.render("Profit: $%d"%(self.revenue-self.costs), True, (200,0,0),(255,255,255))
+        profitrect = profit.get_rect()
+        profitrect.centerx = 1300
+        profitrect.centery = 150
+        self.screen.blit(profit, profitrect)
     
     #Loops through the list of vertices and draws a blue circle with the number of the vertex in the animation window
     def draw_verticies(self):

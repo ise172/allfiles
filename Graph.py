@@ -123,7 +123,14 @@ class Graph:
             fromNode = self.FW_next[fromNode,toNode]
             cost = cost + self.get_cost(temp, fromNode)
         path.append(toNode)
-        return path        
+        return path 
+    
+    # Finds the shortest path from a start node to an end node and returns the cost of the path 
+    def floyd_warshall_length(self, path):
+        cost = 0
+        for i in range(0,len(path)-2):
+            cost = cost + self.get_cost(path[i],path[i+1])
+        return cost       
     
     
     
