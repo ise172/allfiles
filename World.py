@@ -40,6 +40,12 @@ class World(AbstractWorld):
 			self.warehouses.append(Warehouse(w['location'],w['type']))
 		for p in ProductionLines:
 			self.prodLines.append(ProductionLine(p['location'],p['type'],['capacityOfMaterial[tons]']))	
+		### ADDING AN EXTRA PRODUCTION LINE OF EACH TYPE (4 TOTAL)
+		#self.prodLines.append(ProductionLine(149,'L1',100))
+		#self.prodLines.append(ProductionLine(87,'L2',100))
+		#self.prodLines.append(ProductionLine(76,'L3',100))
+		#self.prodLines.append(ProductionLine(49,'L4',100))
+		###
 		for i,t in enumerate(Trucks):
 			self.trucks.append(Truck(t.currentPossition[1],self.graph,t.capacity,i))
 		# Print the production lines, warehouses, and trucks
@@ -48,13 +54,14 @@ class World(AbstractWorld):
 		for i,t in enumerate(Trucks):
 			print "vehicle %d: %s"%(i, str(t))
 		#Initialize the graph and print the edges, verticies, and the graph (as a list of neighbors)
-		self.graph.create_graph(Warehouses,ProductionLines)
+		self.graph.create_graph(self.warehouses,self.prodLines)
 		print "\nEdges: ", self.graph.Edges 
 		print "\nVertices: ", self.graph.Verticies
 		print "\nGraph: ", self.graph.neighbors, "\n\n"
 		# Initialize the floyd warshall algorithm to get all the shortest paths. And initialize the animation screen for the simulation
 		self.graph.initialize_floyd_warshall()
 		self.animation.initialize_animation(self.graph)
+			
 		
 		#This for loop keeps track of the time and one iteration is equivalent to a minute of the work day
 		for t in xrange(initialTime,finalTime):
@@ -81,7 +88,7 @@ class World(AbstractWorld):
 									index = i
 						
 						if self.prodLines[index].inventory[process['resourceNeeded']] < process['materialNeeded[tons]'] and not self.prodLines[index].shipmentOnWay[0]: #checks to see if the selected production line needs to be re-stocked
-							vehicles.append(self.prodLines[index].get_resources(process['resourceNeeded'],process['materialNeeded[tons]'],self.trucks,self.graph,self.warehouses))
+							vehicles.append(self.prodLines[index].get_resources(process['resourceNeeded'],process['materialNeeded[tons]'],self.trucks,self.graph,self.warehouses,process['processingTime']))
 						jobLocations.append(self.prodLines[index])			
 					#Create an order object for this new order
 					self.openOrders.append(ProductionOrder(c.id,c.productionProcess,c.finalLocation,jobLocations,self.trucks,vehicles,self.graph))
@@ -114,7 +121,8 @@ class World(AbstractWorld):
 			
 			#Update the animation
 			self.animation.update_animation(self.trucks)
-			
+			if t == 300:
+				pygame.time.delay(10000)
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					pygame.quit()

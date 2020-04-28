@@ -17,7 +17,7 @@ class ProductionLine:
         self.holdingCost = 0
 
     #Finds the closest truck to a warehouse of the correct type and sends it on a path from its current location, to the warehouse to pick up resources, to the current prod line.
-    def get_resources(self,resource,amountNeeded,trucks,graph,warehouses):
+    def get_resources(self,resource,amountNeeded,trucks,graph,warehouses,time):
         options = []
         for w in warehouses: #compiles a list of warehouses that are the correct type
             if w.type == resource:
@@ -53,7 +53,7 @@ class ProductionLine:
         self.inventory[resource] = self.inventory[resource] + shipment
         self.update_total_inventory()
         self.shipmentOnWay = [True,pathLength+1]
-        self.currentJobs = self.currentJobs + 1
+        self.currentJobs = self.currentJobs + time
         return trucks[index]
 
     # Updates the total inventory by summing all of the different types of matrial

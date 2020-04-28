@@ -9,13 +9,19 @@ For each order:
 4.  Repeat step 2-3 until there are no more additional processes to carry out.
 5. Find the closest truck to bring the final product to the final location. Mark order as finished, and remove it from the list of openOrders.
 
-Results for a full day:
+Results for a full day: (as of 4/23)
 sales:           $628,500,000
 discount:        $204,700,000
 transportation:  $2,534,805
 holding:         $2,139,540
 Profit:          $419,125,655
 
+Results for a full day: (pick prodLines based on remaining production time rather than number of jobs -> decreased discounts by 20 million)
+sales:            $628,500,000
+discount:         $183,300,000
+transportation:   $2,611,765
+holding:          $2,139,540
+Profit:           $440,448,695
 
 '''
 

@@ -57,6 +57,7 @@ class ProductionOrder:
                     self.lines[0].inventory[self.currentProcess['resourceNeeded']] = self.lines[0].inventory[self.currentProcess['resourceNeeded']] - self.currentProcess['materialNeeded[tons]']
                 #update current process progress
                 temp = self.currentProcessProgress[0] + 1
+                self.lines[0].currentJobs = self.lines[0].currentJobs - 1
                 self.currentProcessProgress= [temp,self.currentProcess['processingTime']]
         else: #measures progress along the final transit and marks the order as finished once we reach it
             if self.transit[0] < self.transit[1]:

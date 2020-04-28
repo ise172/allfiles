@@ -12,8 +12,6 @@ class Animation():
     #Initializes the animation and variables needed
     def __init__(self, graph):
         self.graph = graph
-        self.Edges = graph.Edges
-        self.Verticies = graph.Verticies
         self.dimx = 1500
         self.dimy = 1050
         self.font1  = pygame.font.SysFont('Comic Sans MS', 30)
@@ -36,6 +34,7 @@ class Animation():
         self.screen.fill((255,255,255))
         Animation.draw_time(self)
         Animation.draw_profit(self)
+        Animation.draw_legend(self)
         Animation.draw_edges(self)
         Animation.draw_verticies(self)
         Animation.draw_wharehouses(self)
@@ -51,6 +50,32 @@ class Animation():
         textrect.centerx = 100
         textrect.centery = 50
         self.screen.blit(text, textrect)
+    
+    def draw_legend(self):
+        #Warehouses
+        w = self.font1.render("Warehouse", True, (0,0,0),(255,255,255))
+        wrect = w.get_rect()
+        wrect.centerx = 150
+        wrect.centery = 1000
+        self.screen.blit(w, wrect)
+        pygame.draw.circle(self.screen,(0,0,200),(50,1000),12)
+        pygame.draw.circle(self.screen,(255,100,10),(50,1000),10)
+        #Production Lines
+        p = self.font1.render("Production Line", True, (0,0,0),(255,255,255))
+        prect = p.get_rect()
+        prect.centerx = 180
+        prect.centery = 950
+        self.screen.blit(p, prect)
+        pygame.draw.circle(self.screen,(0,0,200),(50,950),12)
+        pygame.draw.circle(self.screen,(255,255,0),(50,950),10)
+        #Trucks
+        t = self.font1.render("Truck", True, (0,0,0),(255,255,255))
+        trect = t.get_rect()
+        trect.centerx = 110
+        trect.centery = 900
+        self.screen.blit(t, trect)
+        pygame.draw.circle(self.screen,(0,255,0),(50,900),5)
+        
     
     #Displays the revenue, cost and profit in the top right corner of the window
     def draw_profit(self):
@@ -79,7 +104,7 @@ class Animation():
     
     #Loops through the list of vertices and draws a blue circle with the number of the vertex in the animation window
     def draw_verticies(self):
-        for vertex in self.Verticies:
+        for vertex in self.graph.Verticies:
             center = (vertex[1],vertex[2])
             pygame.draw.circle(self.screen,(0,0,200),center,12)
             text = self.font2.render("%d"%(vertex[0]), True, (255, 255, 255))
@@ -91,20 +116,28 @@ class Animation():
     #Draws the warehouses on the graphs (in orange)
     def draw_wharehouses(self):
         for warehouse in self.graph.Warehouses:
-            location = self.graph.get_coordinates(warehouse['location'])
+            location = self.graph.get_coordinates(warehouse.location)
             pygame.draw.circle(self.screen,(255,100,10),location,10)
+            text = self.font2.render(warehouse.type, True, (0, 0, 0))
+            textrect = text.get_rect()
+            textrect.centerx = location[0]
+            textrect.centery = location[1]
+            self.screen.blit(text, textrect)
     
     #Draws the Production lines of the graph (in yellow)
     def draw_production_lines(self):
-        #prodLine_colors = {'L1':(255,255,0),'L2':(200,200,0),'L3':(150,150,0),'L4':(100,100,0)}
         for line in self.graph.ProductionLines:
-            location = self.graph.get_coordinates(line['location'])
+            location = self.graph.get_coordinates(line.location)
             pygame.draw.circle(self.screen,(255,255,0),location,10)
-            #pygame.draw.circle(self.screen,prodLine_colors[line['type']],location,10)
+            text = self.font2.render(line.type, True, (0, 0, 0))
+            textrect = text.get_rect()
+            textrect.centerx = location[0]
+            textrect.centery = location[1]
+            self.screen.blit(text, textrect)
         
     #Loops through the list of edges and draws red lines representing the edges. If the edge is curved, loop through each of the points on the curve and draw small line segments.
     def draw_edges(self):
-        for edge in self.Edges:
+        for edge in self.graph.Edges:
             if len(edge[3]) > 2:
                 #CURVE
                 n = len(edge[3])
